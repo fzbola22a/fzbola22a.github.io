@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html data-theme='dark' lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+
+<head>
+    <!-- Required Meta Tags -->
+    <meta charset='utf-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0' />
+
+    <!-- Styles -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .player {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            top: 0;
+            left: 0;
+            z-index: 99999;
+        }
+
+        .forbidden {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 24px;
+            color: red;
+            background-color: black;
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script src='https://cdn.jsdelivr.net/gh/clappr/clappr@latest/dist/clappr.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js'></script>
+    <script src="//cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/cdnbye@latest/dist/hlsjs-p2p-engine.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/cdnbye@latest/dist/clappr-plugin.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/clappr-chromecast-plugin@latest/dist/clappr-chromecast-plugin.min.js'></script>
+</head>
+
+<body>
+    <div id="content"></div>
+
+    <script>
+        // Daftar domain yang diizinkan
+        const allowedDomains = [
+            'v1.fzbola22.top',
+            'cys1d925b2.snarlgnats.top'
+        ];
+
+        // Mendapatkan domain dari referrer
+        const referrer = document.referrer;
+        const referrerDomain = new URL(referrer).hostname;
+
+        // Memeriksa apakah domain referrer ada dalam daftar yang diizinkan
+        if (!allowedDomains.includes(referrerDomain)) {
+            // Jika tidak diizinkan, tampilkan pesan forbidden
+            document.getElementById('content').innerHTML = `
+                <div class="forbidden">
+                    <h1>403 Forbidden</h1>
+                    <p>Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+                </div>
+            `;
+        } else {
+            // Jika diizinkan, tampilkan pemutar
+            const playerHTML = `
+                <div class="player" src="https://webtvstream.bhtelecom.ba/hls6/arena1.mpd"></div>
+            `;
+            document.getElementById('content').innerHTML = playerHTML;
+
+            // Kode pemutar Clappr
+            var HelloWorld = Clappr.UIContainerPlugin.extend({
+                bindEvents() {
+                    this.listenTo(this.container, Clappr.Events.CONTAINER_PLAY, this.render);
+                },
+                render: function() {
+                    this.$el.html('<img src="https://cys1d925b2.snarlgnats.top/fzbola22-icon.png" alt="Watermark" style="height: 17px; width: auto;" />');
+                    this.$el.css({
+                        'position': 'absolute',
+                        'width': 'auto',
+                        'filter': 'drop-shadow(2px 2px 2px #000)',
+                        'height': '17px',
+                        'bottom': '5px',
+                        'opacity': '0.75',
+                        'left': '50%',
+                        'transform': 'translateX(-50%)',
+                    });
+                    this.container.$el.append(this.$el);
+                    return this;
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const players = document.querySelectorAll('.player');
+
+                players.forEach(player => {
+                    const clapprConfig = {
+                        source: player.getAttribute("src"),
+                        autoPlay: player.getAttribute("auto") === "true",
+                        plugins: [HelloWorld, DashShakaPlayback, LevelSelector],
+                        levelSelectorConfig: {
+                            title: 'Quality',
+                            labels: {
+                                3: 'HD',
+                                2: 'High',
+                                1: 'Med',
+                                0: 'Low',
+                            },
+                            labelCallback: function (playbackLevel, customLabel) {
+                                return customLabel + playbackLevel.level.height + 'p';
+                            }
+                        },
+                        width: "100%",
+                        height: "100%",
+                        mute: false,
+                        shakaConfiguration: {
+                            drm: {
+                                clearKeys: {
+                                    'c18b6aa739be4c0b774605fcfb5d6b68': 'e41c3a6f7532b2e3a828d9580124c89d',
+                                }
+                            }
+                        },
+                    };
+                    const clappr = new Clappr.Player(clapprConfig);
+                    clappr.attachTo(player);
+                    clappr.on(Clappr.Events.PLAYER_PLAY, function () { });
+                });
+
+                var mediaOnPage = Array.prototype.slice.apply(document.querySelectorAll('audio, video'));
+                mediaOnPage.forEach(function (mediumOnPage) {
+                    mediumOnPage.addEventListener('play', function (event) {
+                        mediaOnPage.forEach(function (mediumOnPage) {
+                            if (event.target != mediumOnPage) {
+                                mediumOnPage.pause();
+                            }
+                        });
+                    });
+                });
+            });
+        }
+    </script>
+</body>
+</html>
